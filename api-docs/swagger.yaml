@@ -7,7 +7,7 @@ info:
 servers:
   - url: http://localhost:8000/api
     description: localhost environment
-  - url: whispering-ocean-04022.herokuapp.com/api
+  - url: http://whispering-ocean-04022.herokuapp.com/api
     description: Heroku Hosted Server
 
 tags:
