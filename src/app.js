@@ -10,6 +10,7 @@ const path = require(`path`);
 const expressGraphQL = require(`express-graphql`).graphqlHTTP;
 const bodyParser = require(`body-parser`);
 const cookieParser = require(`cookie-parser`);
+const cors = require("cors");
 
 // Database Connection
 require(`../utils/dbConn`)();
@@ -17,6 +18,17 @@ require(`../utils/dbConn`)();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(
+    cors({
+        // origin: 'http://localhost/:3000/',
+        // headers: "*",
+        // preflightContinue: false,
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+    })
+);
 
 // Swagger Documentation
 app.use(`/api-docs`, require(`./../api-docs/Swagger`));
