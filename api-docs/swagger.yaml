@@ -1,0 +1,489 @@
+openapi: 3.0.0
+info:
+  title: Q.F.C
+  description: Quality Food Corner .
+  version: 0.0.1
+
+servers:
+  - url: http://localhost:8000/api
+    description: localhost environment
+  - url: https://mighty-spire-51439.herokuapp.com/api
+    description: Heroku Hosted Server
+
+tags:
+  - name: Toddle Backend Task
+    description: API to manage the Backend Task.
+
+components:
+  securitySchemes:
+    APIKey:
+      type: apiKey
+      name: Authorization
+      in: header
+  security:
+    - APIKey: []
+
+definitions:
+  
+  User:
+    type: object
+    properties:
+      _id:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      email:
+        type: string
+      role:
+        type: string
+        enum: ['student', 'tutor']
+      classrooms:
+        type: array
+
+  Classroom:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      tutor:
+        type: object
+        properties:
+          _id:
+            type: string
+          firstname:
+            type: string
+          lastname:
+            type: string
+          email:
+            type: string
+      students:
+        type: array
+
+  File:
+    type: object
+    properties:
+      _id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      file:
+        type: file
+      filetype:
+        type: string
+      uploaded_by:
+        type: string
+      classroom:
+        type: object
+
+paths:
+
+  /signup:
+    post:
+      tags: [Auth]
+      summary: Signup
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        description: Email & Password
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstname:
+                  type: string
+                lastname:
+                  type: string
+                email:
+                  type: string
+                role:
+                  type: string
+                  enum: ['student', 'tutor']
+                  default: student
+                password:
+                  type: string
+      responses:
+        "201":
+          description: User Registered Successfully
+        "400":
+          description: Validation Error
+        "422":
+          description: Email already exists
+        "500":
+          description: Internal Server Error
+
+  /signin:
+    post:
+      tags: [Auth]
+      summary: Signin
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        description: Email & Password
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  default: p@gmail.com
+                password:
+                  type: string
+                  default: Pawan@0843
+      responses:
+        "200":
+          description: Signedin the user
+        "400":
+          description: Validation Error
+        "500":
+          description: Internal Server Error
+
+  /signout:
+    get:
+      tags: [Auth]
+      summary: Signout
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Signout the user
+        "500":
+          description: Internal Server Error
+
+  /classroom/{classroomId}:
+    get:
+      tags: [Classroom]
+      summary: returns classroom by Id
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: classroomId
+          default: "632e9e71b991a47c9c32f98d"
+      responses:
+        "200":
+          description: returns classroom by Id
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#definitions/Classroom"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+    
+    put:
+      tags: [Classroom]
+      summary: Update classroom by Id (Tutor)
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: classroomId
+          default: "632e9e71b991a47c9c32f98d"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        description: Enter classroom details
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+
+      responses:
+        "201":
+          description: Classroom updated successfully
+        "400":
+          description: Validation Error
+        "500":
+          description: Internal Server Error          
+    
+    delete:
+      tags: [Classroom]
+      summary: Delete classroom by Id (Tutor)
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: classroomId
+          default: "632e9e71b991a47c9c32f98d"
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: Classroom deleted successfully
+        "400":
+          description: Validation Error
+        "500":
+          description: Internal Server Error
+
+  /classroom:
+    post:
+      tags: [Classroom]
+      summary: Create a classroom (Tutor)
+      security:
+        - APIKey: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        description: Enter classroom details
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                tutor:
+                  type: string
+      responses:
+        "201":
+          description: Classroom created successfully
+        "400":
+          description: Validation Error
+        "422":
+          description: Email already exists
+        "500":
+          description: Internal Server Error
+
+  /classroom/{classroomId}/{studentId}:
+    post:
+      tags: [Classroom]
+      summary: adds students to the classroom (Tutor)
+      security:
+        - APIKey: []
+      parameters:
+        - name: classroomId
+          default: "6195f66e996a1cb655a4d4fc"
+          in: path
+          schema:
+            type: string
+        - name: studentId
+          default: "61a09520777cbadcdde9f596"
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: adds students to the classroom (Tutor)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  tutor:
+                    type: string
+                  students:
+                    type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /classfeed:
+    get:
+      tags: [Classroom]
+      summary: returns classroom feed
+      security:
+        - APIKey: []
+      responses:
+        "200":
+          description: returns classroom feed
+          content:
+            application/json:
+              schema:
+                $ref: "#definitions/Classroom"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /files/{fileId}:
+    get:
+      tags: [Files]
+      summary: returns files by Id
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: fileId
+          default: "632ecfbc5aa338d42d680d6c"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: returns files by Id
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /files/{classroomId}:
+    post:
+      tags: [Files]
+      summary: Uploads file in a classroom
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: classroomId
+          default: "6195f66e996a1cb655a4d4fc"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        description: Uploads file in a classroom
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId: 
+                  type: string
+      responses:
+        "200":
+          description: File uploaded successfully
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /files/{fileId}/{classroomId}:
+    put:
+      tags: [Files]
+      summary: Delete product from cart
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: fileId
+          default: "6195f66e996a1cb655a4d4fc"
+        - in: path
+          name: classroomId
+          default: "6195f66e996a1cb655a4d4fc"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Removed item to cart
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+    
+    delete:
+      tags: [Files]
+      summary: Delete product from cart
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: fileId
+          default: "6195f66e996a1cb655a4d4fc"
+        - in: path
+          name: classroomId
+          default: "6195f66e996a1cb655a4d4fc"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Removed item to cart
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /files/search/{filename}:
+    get:
+      tags: [Files]
+      summary: search files by name
+      security:
+        - APIKey: []
+      parameters:
+        - in: path
+          name: filename
+          default: "BIO PPT 4"
+      responses:
+        "200":
+          description: search files by name
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  file:
+                    type: file
+                  filetype:
+                    type: string
+                  uploaded_by:
+                    type: string
+                  classroom:
+                    type: object
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+
+  /classroom/{classroomId}/filesfeed:
+    get:
+      tags: [Files]
+      summary: returns all files in a classroom
+      parameters:
+        - in: path
+          name: classroomId
+          default: "619cb6bddafcf9142ec6f52a"
+      responses:
+        "200":
+          description: returns all files in a classroom
+          content:
+            application/json:
+              schema:
+                $ref: "#definitions/File"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
