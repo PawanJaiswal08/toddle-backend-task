@@ -7,7 +7,7 @@ info:
 servers:
   - url: http://localhost:8000/api
     description: localhost environment
-  - url: https://mighty-spire-51439.herokuapp.com/api
+  - url: whispering-ocean-04022.herokuapp.com/api
     description: Heroku Hosted Server
 
 tags:
