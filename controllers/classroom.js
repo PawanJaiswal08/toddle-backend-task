@@ -134,7 +134,13 @@ exports.deleteClassRoom = async (req, res) => {
         // );
 
         // delete file also from that classroom
-        const files = await File.deleteMany({ classroom: classroom._id });
+        const files = await File.find({ classroom: classroom._id });
+        await Promise.all(
+            files.map(async (file) => {
+                await unlinkFile(file.filepath);
+                await file.remove();
+            })
+        );
 
         if (deletedClassroom) {
             return res.status(200).json({ status: "OK" });

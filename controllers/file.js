@@ -114,7 +114,7 @@ exports.updateFile = async (req, res) => {
 exports.deleteFile = async (req, res) => {
     try {
         const file = await File.findById(req.params.fileId);
-        unlinkFile(file.filepath);
+        await unlinkFile(file.filepath);
         const deletedFile = await file.remove();
 
         if (deletedFile) {
