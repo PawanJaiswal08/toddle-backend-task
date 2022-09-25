@@ -59,7 +59,6 @@ exports.uploadFile = async (req, res) => {
 
         // uploaded file
         const file = req.file;
-        console.log(file);
         const filetype = MIME_TYPE_MAP[file.mimetype];
 
         const classroom = await ClassRoom.findById(req.params.classroomId);
