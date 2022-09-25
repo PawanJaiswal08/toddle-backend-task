@@ -13,10 +13,7 @@ const DatabaseConnect = async () => {
             // useFindAndModify: false,
         });
 
-        // console.log(Database Connected ...);
-        console.log(
-            `Database Connected on Port ${conn.connection.port} ... ${conn.connection.host}`
-        );
+        console.log(`Database Connected Successfully...`);
     } catch (error) {
         console.log(error);
         if (error == `MongoNetworkError`) {
