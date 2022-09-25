@@ -4,3 +4,4 @@ config.env
 package-lock.json
 /uploads
 /uploads/*
+.prettierignore

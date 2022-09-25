@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: Q.F.C
-  description: Quality Food Corner .
+  title: Toddle
+  description: Toddle Backend Task .
   version: 0.0.1
 
 servers:
@@ -12,7 +12,7 @@ servers:
 
 tags:
   - name: Toddle Backend Task
-    description: API to manage the Backend Task.
+    description: APIs to manage the Backend Task.
 
 components:
   securitySchemes:
