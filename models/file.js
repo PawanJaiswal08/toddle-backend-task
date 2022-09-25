@@ -18,7 +18,7 @@ var fileSchema = new Schema(
             trim: true,
         },
 
-        file: {
+        filepath: {
             type: String,
             required: true,
             trim: true,

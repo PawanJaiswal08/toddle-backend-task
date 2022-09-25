@@ -1,12 +1,16 @@
-const ClassRoom = require("../models/classroom");
-const mongoose = require("mongoose");
-const { validationResult } = require("express-validator");
-const catchAsync = require("./../utils/catchAsync");
-const User = require("./../models/user");
+const mongoose = require(`mongoose`);
+const ClassRoom = require(`../models/classroom`);
+const User = require(`./../models/user`);
+const File = require(`./../models/file`);
 
-// @desc Get classroom By ID
-// @route GET /api/user/:userId
-// @access Public
+const fs = require("fs");
+const util = require("util");
+const unlinkFile = util.promisify(fs.unlink);
+
+const { validationResult } = require(`express-validator`);
+
+// @desc check wheather classroom created by this tutor or not
+// @access Tutor
 exports.checkClassRoomByTutor = async (req, res, next) => {
     try {
         const classroom = await ClassRoom.findById(req.params.classroomId);
@@ -18,7 +22,7 @@ exports.checkClassRoomByTutor = async (req, res, next) => {
         // check classroom tutor
         if (req.user._id.toString() != classroom.tutor.toString()) {
             return res.status(404).json({
-                error: "Acccess Denied",
+                error: "Acccess Denied | You are not tutor of this class",
             });
         }
 
@@ -30,6 +34,9 @@ exports.checkClassRoomByTutor = async (req, res, next) => {
     }
 };
 
+// @desc get classroom by ID
+// @route /classroom/:classroomId
+// @access Tutor
 exports.getClassRoom = async (req, res) => {
     try {
         return res.status(200).json({ classroom: req.classroom });
@@ -39,8 +46,8 @@ exports.getClassRoom = async (req, res) => {
     }
 };
 
-// @desc Create a Classroom
-// @route POST /api/user/signup
+// @desc create a classroom
+// @route /classroom
 // @access Tutor
 exports.createClassRoom = async (req, res) => {
     try {
@@ -81,8 +88,8 @@ exports.createClassRoom = async (req, res) => {
     }
 };
 
-// @desc Update a Classroom
-// @route PUT /api/product/:productId/:userId
+// @desc update a classroom
+// @route /classroom/:classroomId
 // @access Tutor
 exports.updateClassRoom = async (req, res) => {
     try {
@@ -105,8 +112,8 @@ exports.updateClassRoom = async (req, res) => {
     }
 };
 
-// @desc Delete a Classroom
-// @route DELETE /api/offer/all
+// @desc delete a classroom
+// @route /classroom/:classroomId
 // @access Tutor
 exports.deleteClassRoom = async (req, res) => {
     try {
@@ -114,17 +121,32 @@ exports.deleteClassRoom = async (req, res) => {
 
         const deletedClassroom = await classroom.remove();
 
+        // update students when a classroom deleted
+        const students = await User.updateMany(
+            {},
+            { $pull: { classrooms: classroom._id } }
+        );
+
+        // remove files in from that classroom
+        // const files = await File.updateMany(
+        //     {},
+        //     { $unset: { classroom: classroom._id } }
+        // );
+
+        // delete file also from that classroom
+        const files = await File.deleteMany({ classroom: classroom._id });
+
         if (deletedClassroom) {
             return res.status(200).json({ status: "OK" });
         }
     } catch (error) {
         console.log(error);
-        return res.status(400).json({ error: error });
+        return res.status(500).json({ error: error });
     }
 };
 
-// @desc Add Students to Classroom
-// @route POST /api/offer/all
+// @desc add students to a classroom
+// @route /classroom/:classroomId/:studentId
 // @access Tutor
 exports.addStudentsToClassRoom = async (req, res) => {
     try {
@@ -135,7 +157,11 @@ exports.addStudentsToClassRoom = async (req, res) => {
             if (!student)
                 return res.status(404).json({ error: "User does not exists" });
 
-            if (student.classrooms.includes(classroom._id))
+            if (
+                student.classrooms.includes(classroom._id) ||
+                // tutor adding himself again
+                classroom.tutor == student.id
+            )
                 return res
                     .status(404)
                     .json({ error: "User already exists in classroom" });
@@ -155,9 +181,9 @@ exports.addStudentsToClassRoom = async (req, res) => {
     }
 };
 
-// @desc Delete a Classroom
-// @route DELETE /api/offer/all
-// @access Tutor
+// @desc get classroom feed (classfeed)
+// @route /classfeed
+// @access Tutor/Student
 exports.getClassroomFeed = async (req, res) => {
     try {
         if (req.user.role == `student`) {

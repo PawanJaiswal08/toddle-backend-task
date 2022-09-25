@@ -14,8 +14,8 @@ const {
 } = require(`./../controllers/classroom`);
 const { protectAccess, restrictTo } = require(`./../controllers/auth`);
 
-// @desc get classroom
-// @access Public
+// @desc get classroom by ID
+// @access Tutor
 router.get(
     `/classroom/:classroomId`,
     protectAccess,

@@ -1,5 +1,10 @@
 const File = require("../models/file");
 const ClassRoom = require("../models/classroom");
+
+const fs = require("fs");
+const util = require("util");
+const unlinkFile = util.promisify(fs.unlink);
+
 const { validationResult } = require("express-validator");
 
 const MIME_TYPE_MAP = {
@@ -12,7 +17,7 @@ const MIME_TYPE_MAP = {
     "image/jpg": "IMAGE",
 };
 
-// @desc Get classroom By ID
+// @desc get file by ID
 // @route GET /api/user/:userId
 // @access Public
 exports.getFile = async (req, res, next) => {
@@ -21,25 +26,12 @@ exports.getFile = async (req, res, next) => {
         return res.status(200).json({ status: `OK`, file: file });
     } catch (error) {
         console.log(error);
-        return res.status(400).json({ error: `No File found` });
+        return res.status(500).json({ error: error });
     }
 };
 
-// @desc Get all files in classroom
-// @route GET /api/user/:userId
-// @access Public
-exports.getAllFilesInClassRoom = async (req, res) => {
-    try {
-        const files = await File.find({ classroom: req.params.classroomId });
-        if (files) return res.status(200).json({ status: "OK", files: files });
-    } catch (error) {
-        console.log(error);
-        return res.status(400).json({ error: `No Files found` });
-    }
-};
-
-// @desc Create a Classroom
-// @route POST /api/user/signup
+// @desc upload a file
+// @route /files/:classroomId
 // @access Tutor
 exports.uploadFile = async (req, res) => {
     try {
@@ -78,7 +70,7 @@ exports.uploadFile = async (req, res) => {
             filetype: filetype,
             uploaded_by: classroom.tutor,
             classroom: classroom._id,
-            file: file.path,
+            filepath: file.path,
         });
 
         if (newFile) {
@@ -92,8 +84,8 @@ exports.uploadFile = async (req, res) => {
     }
 };
 
-// @desc Update a Classroom
-// @route PUT /api/product/:productId/:userId
+// @desc update a file
+// @route /files/:fileId/:classroomId
 // @access Tutor
 exports.updateFile = async (req, res) => {
     try {
@@ -117,13 +109,13 @@ exports.updateFile = async (req, res) => {
     }
 };
 
-// @desc Delete a Classroom
-// @route DELETE /api/offer/all
-// @access Admin
+// @desc delete a file
+// @route /files/:fileId/:classroomId
+// @access Tutor
 exports.deleteFile = async (req, res) => {
     try {
         const file = await File.findById(req.params.fileId);
-
+        unlinkFile(file.filepath);
         const deletedFile = await file.remove();
 
         if (deletedFile) {
@@ -133,13 +125,13 @@ exports.deleteFile = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        return res.status(400).json({ error: error });
+        return res.status(500).json({ error: error });
     }
 };
 
-// @desc Delete a Classroom
-// @route DELETE /api/offer/all
-// @access Admin
+// @desc search a file by filename
+// @route /files/search/:filename
+// @access Tutor
 exports.searchFile = async (req, res) => {
     try {
         const file = await File.find({ name: req.params.filename });
@@ -152,6 +144,19 @@ exports.searchFile = async (req, res) => {
         return res.status(400).json({ error: `No such file exists` });
     } catch (error) {
         console.log(error);
-        return res.status(400).json({ error: error });
+        return res.status(500).json({ error: error });
+    }
+};
+
+// @desc get all files in a classroom (filesfeed)
+// @route /classroom/:classroomId/filesfeed
+// @access Public
+exports.getAllFilesInClassRoom = async (req, res) => {
+    try {
+        const files = await File.find({ classroom: req.params.classroomId });
+        if (files) return res.status(200).json({ status: "OK", files: files });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: error });
     }
 };

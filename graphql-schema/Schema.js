@@ -8,6 +8,7 @@ const {
 
 const User = require(`./../models/user`);
 const ClassRoom = require(`./../models/classroom`);
+const File = require(`./../models/file`);
 
 const UserType = new GraphQLObjectType({
     name: `User`,
@@ -35,13 +36,7 @@ const ClassRoomType = new GraphQLObjectType({
                 return user;
             },
         },
-        students: {
-            type: UserType,
-            resolve: async (classroom) => {
-                const user = await User.findById(classroom.tutor);
-                return user;
-            },
-        },
+        students: { type: GraphQLList(GraphQLString) },
     }),
 });
 

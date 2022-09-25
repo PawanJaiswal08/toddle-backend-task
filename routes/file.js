@@ -14,8 +14,8 @@ const {
 
 const upload = require(`./../utils/multer`);
 
-// @desc get file
-// @access Public
+// @desc get a file
+// @access Tutor/Student
 router.get(
     `/files/:fileId`,
     protectAccess,
@@ -23,7 +23,7 @@ router.get(
     getFile
 );
 
-// @desc create a file
+// @desc upload a file
 // @access Tutor
 router.post(
     `/files/:classroomId`,
@@ -54,7 +54,7 @@ router.delete(
     deleteFile
 );
 
-// @desc delete a file
+// @desc search a file by filename
 // @access Tutor
 router.get(
     `/files/search/:filename`,
@@ -64,7 +64,7 @@ router.get(
 );
 
 // @desc get all files in a classroom
-// @access Public
+// @access Tutor/Student
 router.get(
     `/classroom/:classroomId/filesfeed`,
     protectAccess,
